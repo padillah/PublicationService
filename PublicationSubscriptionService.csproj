@@ -7,8 +7,8 @@
     <ProjectGuid>{C420754B-7C13-4A44-B162-8DA8AA354F3A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PublicationService</RootNamespace>
-    <AssemblyName>PublicationService</AssemblyName>
+    <RootNamespace>PublicationSubscriptionService</RootNamespace>
+    <AssemblyName>PublicationSubscriptionService</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

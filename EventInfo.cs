@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PublicationService
+namespace PublicationSubscription
 {
     public class EventInfo
     {
         public string Name { get; }
 
-        public List<ISubscriptionCallback> CallbackList { get; set; }
+        public Dictionary<Guid, PublicationService.SubscriptionCallback> SubscriptionList { get; set; }
 
         public EventInfo(string argEventName)
         {
             Name = argEventName;
+            SubscriptionList = new Dictionary<Guid, PublicationService.SubscriptionCallback>();
         }
     }
 }

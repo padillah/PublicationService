@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EventInfo.cs" />
+    <Compile Include="IPublicationService.cs" />
     <Compile Include="ISubscriptionCallback.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PublicationService.cs" />

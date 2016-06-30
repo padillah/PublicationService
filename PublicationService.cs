@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using PublicationService;
 
-namespace PublicationService
+namespace PublicationSubscription
 {
-    public class PublicationService
+    public class PublicationService:IPublicationService
     {
         private Dictionary<int, EventInfo> _publicationDictionary;
+
+        public delegate void SubscriptionCallback(object argSender, object argEventArgs);
 
         public PublicationService()
         {
@@ -37,23 +41,37 @@ namespace PublicationService
         {
             EventInfo currentEvent = _publicationDictionary[argEventId];
 
-            foreach (ISubscriptionCallback subscriptionCallback in currentEvent.CallbackList)
+            foreach (KeyValuePair<Guid, SubscriptionCallback> eventSubscription in currentEvent.SubscriptionList)
             {
-                subscriptionCallback.Raise(argSender, argEventArgs);
+                eventSubscription.Value(argSender, argEventArgs);
             }
         }
 
         //Subscribe to an event
-        public void Subscribe(int argEventId, ISubscriptionCallback argCallback)
+        public Guid Subscribe(int argEventId, SubscriptionCallback argCallback)
         {
-            EventInfo currentEvent = _publicationDictionary[argEventId];
+            try
+            {
+                EventInfo currentEvent = _publicationDictionary[argEventId];
+                Guid subscriptionGuid = Guid.NewGuid();
 
-            currentEvent.CallbackList.Add(argCallback);
+                currentEvent.SubscriptionList.Add(subscriptionGuid, argCallback);
+                return subscriptionGuid;
+            }
+            catch (Exception)
+            {
+                return Guid.Empty;
+            }
         }
 
         //Release an events subscriptions
-        public void ReleaseSubscription()
+        public void ReleaseSubscription(Guid argSubscriptionGuid)
         {
+
+            foreach (KeyValuePair<int, EventInfo> currentEvent in _publicationDictionary)
+            {
+                currentEvent.Value.SubscriptionList.Remove(argSubscriptionGuid);
+            }
 
         }
     }

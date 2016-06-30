@@ -9,42 +9,33 @@ namespace PublicationService
 {
     public class PublicationService
     {
-        private Dictionary<Guid, EventInfo> _publicationDictionary;
+        private Dictionary<int, EventInfo> _publicationDictionary;
 
         public PublicationService()
         {
-            _publicationDictionary = new Dictionary<Guid, EventInfo>();
+            _publicationDictionary = new Dictionary<int, EventInfo>();
         }
 
         //Add an event to the published list
-        public void Add(Guid argEventGuid, string argEventName)
+        public int Register(string argEventName)
         {
-            _publicationDictionary.Add(argEventGuid, new EventInfo(argEventName));
-        }
+            //Check for events with this name.
+            KeyValuePair<int, EventInfo> currentEvent = _publicationDictionary.SingleOrDefault(x => x.Value.Name == argEventName);
 
-        public void Add(string argEventName)
-        {
-            Guid tempGuid = new Guid();
-            Add(tempGuid, argEventName);
-        }
+            //If there are no events with this name, add one.
+            if (currentEvent.Equals(default(KeyValuePair<int, EventInfo>)))
+            {
+                _publicationDictionary.Add(_publicationDictionary.Count, new EventInfo(argEventName));
+                return _publicationDictionary.Count;
+            }
 
-        //Get list of publishable events
-        public Dictionary<Guid, string> EventList()
-        {
-            return _publicationDictionary.ToDictionary(x => x.Key, y => y.Value.Name);
-        }
-
-        public Dictionary<Guid, string> EventList(string argNameFilter)
-        {
-            return _publicationDictionary
-                .Where(argX => argX.Value.Name.Contains(argNameFilter)) //Where the Value
-                .ToDictionary(argY => argY.Key, argZ => argZ.Value.Name);
+            return currentEvent.Key;
         }
 
         //Raise an event publication
-        public void RaiseEvent(Guid argEventGuid, object argSender = null, object argEventArgs = null)
+        public void RaiseEvent(int argEventId, object argSender = null, object argEventArgs = null)
         {
-            EventInfo currentEvent = _publicationDictionary[argEventGuid];
+            EventInfo currentEvent = _publicationDictionary[argEventId];
 
             foreach (ISubscriptionCallback subscriptionCallback in currentEvent.CallbackList)
             {
@@ -53,9 +44,9 @@ namespace PublicationService
         }
 
         //Subscribe to an event
-        public void Subscribe(Guid argEventGuid, ISubscriptionCallback argCallback)
+        public void Subscribe(int argEventId, ISubscriptionCallback argCallback)
         {
-            EventInfo currentEvent = _publicationDictionary[argEventGuid];
+            EventInfo currentEvent = _publicationDictionary[argEventId];
 
             currentEvent.CallbackList.Add(argCallback);
         }
@@ -63,7 +54,7 @@ namespace PublicationService
         //Release an events subscriptions
         public void ReleaseSubscription()
         {
-            
+
         }
     }
 }

@@ -4,53 +4,50 @@ using System.Linq;
 
 namespace PublicationSubscriptionService
 {
-    public class PublicationService:IPublicationService
+    public class PublicationService : IPublicationService
     {
-        private Dictionary<int, EventInfo> _publicationDictionary;
+        private Dictionary<string, Dictionary<Guid, SubscriptionCallback>> _publicationDictionary;
 
         public delegate void SubscriptionCallback(object argSender, object argEventArgs);
 
         public PublicationService()
         {
-            _publicationDictionary = new Dictionary<int, EventInfo>();
+            _publicationDictionary = new Dictionary<string, Dictionary<Guid, SubscriptionCallback>>();
         }
 
         //Add an event to the published list
-        public int Register(string argEventName)
+        public void Register(string argEventName)
         {
             //Check for events with this name.
-            KeyValuePair<int, EventInfo> currentEvent = _publicationDictionary.SingleOrDefault(x => x.Value.Name == argEventName);
+            Dictionary<Guid, SubscriptionCallback> currentEvent = _publicationDictionary[argEventName];
 
             //If there are no events with this name, add one.
-            if (currentEvent.Equals(default(KeyValuePair<int, EventInfo>)))
+            if (currentEvent.Equals(default(Dictionary<Guid, SubscriptionCallback>)))
             {
-                _publicationDictionary.Add(_publicationDictionary.Count, new EventInfo(argEventName));
-                return _publicationDictionary.Count;
+                _publicationDictionary.Add(argEventName, new Dictionary<Guid, SubscriptionCallback>());
             }
-
-            return currentEvent.Key;
         }
 
         //Raise an event publication
-        public void RaiseEvent(int argEventId, object argSender = null, object argEventArgs = null)
+        public void RaiseEvent(string argEventName, object argSender = null, object argEventArgs = null)
         {
-            EventInfo currentEvent = _publicationDictionary[argEventId];
+            Dictionary<Guid, SubscriptionCallback> currentEvent = _publicationDictionary[argEventName];
 
-            foreach (KeyValuePair<Guid, SubscriptionCallback> eventSubscription in currentEvent.SubscriptionList)
+            foreach (KeyValuePair<Guid, SubscriptionCallback> eventSubscription in currentEvent)
             {
                 eventSubscription.Value(argSender, argEventArgs);
             }
         }
 
         //Subscribe to an event
-        public Guid Subscribe(int argEventId, SubscriptionCallback argCallback)
+        public Guid Subscribe(string argEventName, SubscriptionCallback argCallback)
         {
             try
             {
-                EventInfo currentEvent = _publicationDictionary[argEventId];
+                Dictionary<Guid, SubscriptionCallback> currentEvent = _publicationDictionary[argEventName];
                 Guid subscriptionGuid = Guid.NewGuid();
 
-                currentEvent.SubscriptionList.Add(subscriptionGuid, argCallback);
+                currentEvent.Add(subscriptionGuid, argCallback);
                 return subscriptionGuid;
             }
             catch (Exception)
@@ -63,9 +60,9 @@ namespace PublicationSubscriptionService
         public void ReleaseSubscription(Guid argSubscriptionGuid)
         {
 
-            foreach (KeyValuePair<int, EventInfo> currentEvent in _publicationDictionary)
+            foreach (KeyValuePair<string, Dictionary<Guid, SubscriptionCallback>> currentEvent in _publicationDictionary)
             {
-                currentEvent.Value.SubscriptionList.Remove(argSubscriptionGuid);
+                currentEvent.Value.Remove(argSubscriptionGuid);
             }
 
         }

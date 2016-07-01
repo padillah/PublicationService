@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PublicationSubscriptionService
 {
@@ -18,10 +19,10 @@ namespace PublicationSubscriptionService
         public void Register(string argEventName)
         {
             //Check for events with this name.
-            Dictionary<Guid, SubscriptionCallback> currentEvent = _publicationDictionary[argEventName];
+            KeyValuePair<string, Dictionary<Guid, SubscriptionCallback>> currentEvent =_publicationDictionary.SingleOrDefault(x => x.Key == argEventName);
 
             //If there are no events with this name, add one.
-            if (currentEvent.Equals(default(Dictionary<Guid, SubscriptionCallback>)))
+            if (currentEvent.Equals(default(KeyValuePair<string, Dictionary<Guid, SubscriptionCallback>>)))
             {
                 _publicationDictionary.Add(argEventName, new Dictionary<Guid, SubscriptionCallback>());
             }

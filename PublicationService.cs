@@ -15,19 +15,6 @@ namespace PublicationSubscriptionService
             _publicationDictionary = new Dictionary<string, Dictionary<Guid, SubscriptionCallback>>();
         }
 
-        //Add an event to the published list
-        public void Register(string argEventName)
-        {
-            //Check for events with this name.
-            KeyValuePair<string, Dictionary<Guid, SubscriptionCallback>> currentEvent =_publicationDictionary.SingleOrDefault(x => x.Key == argEventName);
-
-            //If there are no events with this name, add one.
-            if (currentEvent.Equals(default(KeyValuePair<string, Dictionary<Guid, SubscriptionCallback>>)))
-            {
-                _publicationDictionary.Add(argEventName, new Dictionary<Guid, SubscriptionCallback>());
-            }
-        }
-
         //Raise an event publication
         public void RaiseEvent(string argEventName, object argSender = null, object argEventArgs = null)
         {
@@ -44,10 +31,25 @@ namespace PublicationSubscriptionService
         {
             try
             {
-                Dictionary<Guid, SubscriptionCallback> currentEvent = _publicationDictionary[argEventName];
+                Dictionary<Guid, SubscriptionCallback> subscriptionList;
+
+                //Check for events with this name.
+                KeyValuePair<string, Dictionary<Guid, SubscriptionCallback>> currentEvent = _publicationDictionary.SingleOrDefault(x => x.Key == argEventName);
+
+                //If there are no events with this name, add one.
+                if (currentEvent.Equals(default(KeyValuePair<string, Dictionary<Guid, SubscriptionCallback>>)))
+                {
+                    subscriptionList = new Dictionary<Guid, SubscriptionCallback>();
+                    _publicationDictionary.Add(argEventName, subscriptionList);
+                }
+                else
+                {
+                    subscriptionList = currentEvent.Value;
+                }
+
                 Guid subscriptionGuid = Guid.NewGuid();
 
-                currentEvent.Add(subscriptionGuid, argCallback);
+                subscriptionList.Add(subscriptionGuid, argCallback);
                 return subscriptionGuid;
             }
             catch (Exception)
